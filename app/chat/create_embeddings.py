@@ -1,8 +1,9 @@
-from langchain.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
 import sys
 import io
+from langchain.document_loaders import PyPDFLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from app.chat.vector_stores.pinecone import vector_store
+
 
 def create_embeddings_for_pdf(pdf_id: str, pdf_path: str):
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -13,13 +14,5 @@ def create_embeddings_for_pdf(pdf_id: str, pdf_path: str):
     )
 
     docs = loader.load_and_split(text_splitter)
-
-    print(docs)
-
-
-
-
-
-
-    # embedding = OpenAIEmbeddings()
+    vector_store.add_documents(docs)
     pass
