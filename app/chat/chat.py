@@ -12,7 +12,7 @@ def build_chat(chat_args: ChatArgs):
     llm = build_llm(chat_args)
     memory = build_memory(chat_args)
 
-    base_combine_doc = BaseCombineDocumentsChain()
+    # base_combine_doc = BaseCombineDocumentsChain()
 
     return ConversationalRetrievalChain(
         # combine_docs_chain=base_combine_doc,
