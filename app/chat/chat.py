@@ -1,5 +1,4 @@
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chains.combine_documents.base import BaseCombineDocumentsChain
 from app.chat.models import ChatArgs
 from app.chat.vector_stores.pinecone import build_retriever
 from app.chat.memory.sql_memory import build_memory
@@ -14,7 +13,7 @@ def build_chat(chat_args: ChatArgs):
 
     # base_combine_doc = BaseCombineDocumentsChain()
 
-    return ConversationalRetrievalChain(
+    return ConversationalRetrievalChain.from_llm(
         # combine_docs_chain=base_combine_doc,
         llm=llm,
         memory=memory,
