@@ -8,7 +8,7 @@ load_dotenv()
 
 class HandleStreaming(BaseCallbackHandler):
     def on_llm_new_token(self, token, **kwargs):
-        print(token)
+        pass
 
 chat = ChatOpenAI(
     streaming=True, #this allows OpenAI to send data to Langchain in streaming format.
@@ -21,7 +21,12 @@ prompt = ChatPromptTemplate.from_messages([
     ('human', "{content}")
 ])
 
-chain = LLMChain(llm=chat, prompt=prompt)
+class StreamingChain(LLMChain):
+    def stream(self, input):
+        self(input)
+        yield "Hi there"
+
+chain = StreamingChain(llm=chat, prompt=prompt)
 
 
 for chunk in chain.stream(input={"content":"tell me one fantastic joke"}):
