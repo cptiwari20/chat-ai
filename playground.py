@@ -4,6 +4,7 @@ from langchain.chains import LLMChain
 from langchain.callbacks.base import BaseCallbackHandler
 from dotenv import load_dotenv
 from queue import Queue
+from threading import Thread
 
 load_dotenv()
 
@@ -12,7 +13,12 @@ queue = Queue()
 class HandleStreaming(BaseCallbackHandler):
     def on_llm_new_token(self, token, **kwargs):
         queue.put(token)
-        pass
+
+    def on_llm_end(self, response, **kwargs):
+        queue.put(None)
+
+    def on_llm_error(self, error):
+        queue.put(None)
 
 chat = ChatOpenAI(
     streaming=True, #this allows OpenAI to send data to Langchain in streaming format.
@@ -27,15 +33,20 @@ prompt = ChatPromptTemplate.from_messages([
 
 class StreamingChain(LLMChain):
     def stream(self, input):
-        self(input)
+        def task():
+            self(input)
+        
+        Thread(target=task).start()
         while True:
             token = queue.get()
+            if(token is None):
+                break
             yield token
 
 chain = StreamingChain(llm=chat, prompt=prompt)
 
 
-for chunk in chain.stream(input={"content":"tell me one fantastic joke"}):
+for chunk in chain.stream(input={"content":"tell me one fantastic joke in 200 words"}):
     print(chunk)
 # messages = prompt.format_messages(content="Tell me a joke")
 
