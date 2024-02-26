@@ -1,45 +1,61 @@
-from random import random
+import random
 from langchain.chat_models import ChatOpenAI
 from app.chat.models import ChatArgs
 from app.chat.vector_stores import retrieval_map
-from app.chat.memory.sql_memory import build_memory
-from app.chat.llms.chat_openai import build_llm
+from app.chat.memory import memory_map
+from app.chat.llms import llm_map
 from app.chat.chains.retrieval import StreamingConversationalRetrievalChain
-from web.api import (
+from app.web.api import (
     get_conversation_components,
     set_conversation_components
 )
 
+def select_components(component_type: str, component_map, chat_args):
+    component = get_conversation_components(
+        chat_args.conversation_id
+    )
+    previous_component = component[component_type]
+
+    if previous_component:
+        builder = component_map[previous_component]
+        return previous_component, builder(chat_args)
+    else:
+        random_name = random.choice(list(component_map.keys()))
+        builder = component_map[random_name]
+        return random_name, builder(chat_args)
+
 
 
 def build_chat(chat_args: ChatArgs):
-    
-    conversation = get_conversation_components(
-        conversation_id=chat_args.conversation_id
+
+    retriever_name, retriever = select_components(
+        "retriever",
+        retrieval_map,
+        chat_args
     )
 
-    previous_retriever = conversation["retriever"]
-    retriever = None
-    if previous_retriever:
-        build_retriever = retrieval_map[previous_retriever]
-        retriever = build_retriever(chat_args)
-    else:
-        retriever_name = random(list(retrieval_map.keys()))
-        build_retriever = retrieval_map[retriever_name]
-        retriever = build_retriever(chat_args)
-        set_conversation_components(
-            conversation_id=chat_args.conversation_id,
-            retriever=retriever_name,
-            llm="",
-            memory=""
-        )
+    llm_name, llm = select_components(
+        "llm",
+        llm_map,
+        chat_args
+    )
 
+    memory_name, memory = select_components(
+        "memory",
+        memory_map,
+        chat_args
+    )
+    
+    print(f"using, memory: {memory_name}, llm: {llm_name} and retriever: {retriever_name}")
 
+    set_conversation_components(
+        conversation_id=chat_args.conversation_id,
+        retriever=retriever_name,
+        llm=llm_name,
+        memory=memory_name
+    )
 
-
-    llm = build_llm(chat_args)
     condense_question_llm = ChatOpenAI(streaming=False)
-    memory = build_memory(chat_args)
 
     # base_combine_doc = BaseCombineDocumentsChain()
 
