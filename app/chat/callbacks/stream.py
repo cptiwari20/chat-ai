@@ -12,8 +12,7 @@ class StreamingHandler(BaseCallbackHandler):
         if serialized["kwargs"]["streaming"] is True:
             self.streaming_chat_ids.add(run_id)
             print("Streaming chain Id, ", run_id)
-        
-
+    
     def on_llm_new_token(self, token, **kwargs):
         self.queue.put(token)
 
