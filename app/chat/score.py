@@ -1,10 +1,43 @@
+import random
 from .redis import client
+
+def random_component_by_score(component_type, component_map):
+    if component_type not in ["llm", "retriever", "memory"]:
+        return ValueError('Invalid component Type')
+    
+    score_values = client.hgetall(f"{component_type}_score_value")
+    score_counts = client.hgetall(f"{component_type}_score_count")
+
+    names = component_map.keys()
+
+    avg_scores = {}
+    for component_name in names:
+        score = int(score_values.get(component_name, 1))
+        count = int(score_counts.get(component_name, 1))
+        avg = score / count
+        avg_scores[component_name] = max(avg, 0.1)
+            
+        #     if component is component_type:
+        # else:
+        #     return ValueError('Component does not exists')
+
+    print(avg_scores)
+    # get the weightage of the right component
+    sum_scores = sum(avg_scores.values())
+    random_val = random.uniform(0, sum_scores)
+    cumulative = 0
+
+    for name, score in avg_scores.items():
+        cumulative =+ score
+        if random_val <= cumulative:
+            return name
+
 
 def score_conversation(
     conversation_id: str, score: float, llm: str, retriever: str, memory: str
 ) -> None:
     score = min(max(score, 0), 1)
-    
+
     client.hincrby("llm_score_value", llm, score)
     client.hincrby("llm_score_count", llm, 1)
 

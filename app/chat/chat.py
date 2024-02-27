@@ -5,6 +5,7 @@ from app.chat.vector_stores import retrieval_map
 from app.chat.memory import memory_map
 from app.chat.llms import llm_map
 from app.chat.chains.retrieval import StreamingConversationalRetrievalChain
+from app.chat.score import random_component_by_score
 from app.web.api import (
     get_conversation_components,
     set_conversation_components
@@ -20,9 +21,10 @@ def select_components(component_type: str, component_map, chat_args):
         builder = component_map[previous_component]
         return previous_component, builder(chat_args)
     else:
-        random_name = random.choice(list(component_map.keys()))
-        builder = component_map[random_name]
-        return random_name, builder(chat_args)
+        # random_name = random.choice(list(component_map.keys()))
+        scored_better_component = random_component_by_score(component_type, component_map)
+        builder = component_map[scored_better_component]
+        return scored_better_component, builder(chat_args)
 
 
 
