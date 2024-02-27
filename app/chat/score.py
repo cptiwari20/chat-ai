@@ -1,6 +1,19 @@
+from .redis import client
+
 def score_conversation(
     conversation_id: str, score: float, llm: str, retriever: str, memory: str
 ) -> None:
+    score = min(max(score, 0), 1)
+    
+    client.hincrby("llm_score_value", llm, score)
+    client.hincrby("llm_score_count", llm, 1)
+
+    client.hincrby("retriever_score_value", retriever, score)
+    client.hincrby("retriever_score_count", retriever, 1)
+
+    client.hincrby("memory_score_value", memory, score)
+    client.hincrby("memory_score_count", memory, 1)
+
     """
     This function interfaces with langfuse to assign a score to a conversation, specified by its ID.
     It creates a new langfuse score utilizing the provided llm, retriever, and memory components.
