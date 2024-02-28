@@ -69,6 +69,29 @@ def score_conversation(
 
 
 def get_scores():
+    aggregate = {
+        'llm': {},
+        'retriever': {},
+        'memory': {}
+    }
+
+    for component_type in aggregate.keys():
+        values = client.hgetall(f"{component_type}_score_value")
+        scores = client.hgetall(f"{component_type}_score_count")
+
+        names = values.keys()
+
+        for name in names:
+            value = int(values.get(name))
+            score = int(scores.get(name))
+            avg = value/score
+            aggregate[component_type][name] = [avg]
+    
+
+    
+    return aggregate
+
+
     """
     Retrieves and organizes scores from the langfuse client for different component types and names.
     The scores are categorized and aggregated in a nested dictionary format where the outer key represents
