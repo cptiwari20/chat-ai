@@ -23,6 +23,7 @@ def select_components(component_type: str, component_map, chat_args):
     else:
         # random_name = random.choice(list(component_map.keys()))
         scored_better_component = random_component_by_score(component_type, component_map)
+        print("scored_better_component :: ",scored_better_component)
         builder = component_map[scored_better_component]
         return scored_better_component, builder(chat_args)
 
@@ -48,7 +49,7 @@ def build_chat(chat_args: ChatArgs):
         chat_args
     )
     
-    print(f"using, memory: {memory_name}, llm: {llm_name} and retriever: {retriever_name}")
+    print(f"Now we are using::  memory: {memory_name}, llm: {llm_name} and retriever: {retriever_name}")
 
     set_conversation_components(
         conversation_id=chat_args.conversation_id,

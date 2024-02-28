@@ -28,10 +28,12 @@ def random_component_by_score(component_type, component_map):
     cumulative = 0
 
     for name, score in avg_scores.items():
-        cumulative =+ score
+        print("Printing Values::: ", name, random_val, cumulative)
+        cumulative += score
         if random_val <= cumulative:
             return name
-
+        # else:
+        #     return name
 
 def score_conversation(
     conversation_id: str, score: float, llm: str, retriever: str, memory: str
