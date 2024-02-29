@@ -1,10 +1,13 @@
-import random
 from langchain.chat_models import ChatOpenAI
+from langfuse.model import CreateTrace
+
 from app.chat.models import ChatArgs
+from app.chat.chains.retrieval import StreamingConversationalRetrievalChain
 from app.chat.vector_stores import retrieval_map
 from app.chat.memory import memory_map
 from app.chat.llms import llm_map
-from app.chat.chains.retrieval import StreamingConversationalRetrievalChain
+from app.chat.tracing.langfuse import langfuse
+
 from app.chat.score import random_component_by_score
 from app.web.api import (
     get_conversation_components,
@@ -60,14 +63,20 @@ def build_chat(chat_args: ChatArgs):
 
     condense_question_llm = ChatOpenAI(streaming=False)
 
-    # base_combine_doc = BaseCombineDocumentsChain()
+    trace = langfuse.trace(
+        CreateTrace(
+            id=chat_args.conversation_id,
+            metadata=chat_args.metadata
+        )
+    )
 
     return StreamingConversationalRetrievalChain.from_llm(
         condense_question_llm=condense_question_llm, #second chain that will not stream
         # combine_docs_chain=base_combine_doc,
         llm=llm,
         memory=memory,
-        retriever=retriever
+        retriever=retriever,
+        callbacks=[trace.getNewHandler()]
     )
 
 

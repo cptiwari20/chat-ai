@@ -39,7 +39,7 @@ def build_window_memory(chat_args):
         chat_memory=SqlMessageHistory(
             conversation_id=chat_args.conversation_id
         ),
-        input_key="chat_history",
+        memory_key="chat_history",
         output_key="answer",
         return_messages=True,
         k=2
